@@ -211,7 +211,7 @@ int main(void)
      HAL_Delay(10);
      MCMD_Calib(&mcmd4_struct);  // キャリブレーションを行う
      HAL_Delay(2000);  // キャリブレーションが終わるまで待つ
-     MCMD_SetTarget(&mcmd4_struct, 0.4f);  // 目標値(0.0)を設定
+     MCMD_SetTarget(&mcmd4_struct, 30.0f);  // 目標値(0.0)を設定
      HAL_Delay(10);
      MCMD_Control_Enable(&mcmd4_struct);  // 制御開始
      printf("start");
