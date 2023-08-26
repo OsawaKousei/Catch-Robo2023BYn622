@@ -189,7 +189,7 @@ void mcmdSetting(){
 
 	   printf("Start Initializing CAN System:End\n\r");
 	   HAL_Delay(100);
-	   CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
+	   //CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
 
 	   // ここからはCANモジュール基板の設定
 	    // 接続先のMCMDの設定
@@ -230,7 +230,7 @@ void mcmdSetting(){
 	     HAL_Delay(10);
 }
 
-//mcmdSetting();
+mcmdSetting();
 
 
 
