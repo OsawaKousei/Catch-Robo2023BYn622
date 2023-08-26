@@ -36,34 +36,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := CAN_study2023
+BUILD_ARTIFACT_NAME := Catch-Robo2023BYn622
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-CAN_study2023.elf \
+Catch-Robo2023BYn622.elf \
 
 MAP_FILES += \
-CAN_study2023.map \
+Catch-Robo2023BYn622.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-CAN_study2023.list \
+Catch-Robo2023BYn622.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: CAN_study2023.elf secondary-outputs
+main-build: Catch-Robo2023BYn622.elf secondary-outputs
 
 # Tool invocations
-CAN_study2023.elf CAN_study2023.map: $(OBJS) $(USER_OBJS) C:\Users\jwith\STM32CubeIDE\workspace_1.12.1\CAN_study2023\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "CAN_study2023.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\jwith\STM32CubeIDE\workspace_1.12.1\CAN_study2023\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="CAN_study2023.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Catch-Robo2023BYn622.elf Catch-Robo2023BYn622.map: $(OBJS) $(USER_OBJS) C:\Users\jwith\STM32CubeIDE\workspace_1.12.1\Catch-Robo2023BYn622\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Catch-Robo2023BYn622.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\jwith\STM32CubeIDE\workspace_1.12.1\Catch-Robo2023BYn622\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Catch-Robo2023BYn622.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -72,14 +72,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-CAN_study2023.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "CAN_study2023.list"
+Catch-Robo2023BYn622.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "Catch-Robo2023BYn622.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) CAN_study2023.elf CAN_study2023.list CAN_study2023.map default.size.stdout
+	-$(RM) Catch-Robo2023BYn622.elf Catch-Robo2023BYn622.list Catch-Robo2023BYn622.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
