@@ -217,10 +217,14 @@ int main(void)
      printf("start");
      HAL_Delay(10);
      for(;;){
-    	 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
-    	 printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
-    	 HAL_Delay(10);
-     }
+         	     	 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
+         	     	 printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
+         	     	 HAL_Delay(10);
+         	      }
+
+
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

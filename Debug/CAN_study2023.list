@@ -31,9 +31,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  13 .ARM.attributes 0000002e  00000000  00000000  000201b0  2**0
                   CONTENTS, READONLY
- 14 .debug_info   00017c6e  00000000  00000000  000201de  2**0
+ 14 .debug_info   00017c70  00000000  00000000  000201de  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_abbrev 00002fd5  00000000  00000000  00037e4c  2**0
+ 15 .debug_abbrev 00002fd5  00000000  00000000  00037e4e  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_aranges 00001110  00000000  00000000  0003ae28  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -2894,7 +2894,7 @@ int main(void)
  8001794:	200a      	movs	r0, #10
  8001796:	f000 fe2f 	bl	80023f8 <HAL_Delay>
      for(;;){
-    	 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
+         	     	 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
  800179a:	4c16      	ldr	r4, [pc, #88]	; (80017f4 <main+0x178>)
  800179c:	463b      	mov	r3, r7
  800179e:	4910      	ldr	r1, [pc, #64]	; (80017e0 <main+0x164>)
@@ -2904,17 +2904,17 @@ int main(void)
  80017a8:	463b      	mov	r3, r7
  80017aa:	e893 0003 	ldmia.w	r3, {r0, r1}
  80017ae:	e882 0003 	stmia.w	r2, {r0, r1}
-    	 printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
+         	     	 printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
  80017b2:	4b10      	ldr	r3, [pc, #64]	; (80017f4 <main+0x178>)
  80017b4:	edd3 7a00 	vldr	s15, [r3]
  80017b8:	eefd 7ae7 	vcvt.s32.f32	s15, s15
  80017bc:	ee17 1a90 	vmov	r1, s15
  80017c0:	480d      	ldr	r0, [pc, #52]	; (80017f8 <main+0x17c>)
  80017c2:	f005 fc7f 	bl	80070c4 <iprintf>
-    	 HAL_Delay(10);
+         	     	 HAL_Delay(10);
  80017c6:	200a      	movs	r0, #10
  80017c8:	f000 fe16 	bl	80023f8 <HAL_Delay>
-    	 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
+         	     	 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
  80017cc:	e7e5      	b.n	800179a <main+0x11e>
  80017ce:	bf00      	nop
  80017d0:	080081dc 	.word	0x080081dc
