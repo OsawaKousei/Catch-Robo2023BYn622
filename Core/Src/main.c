@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -70,6 +71,9 @@ DMA_HandleTypeDef hdma_usart3_tx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
+osThreadId defaultTaskHandle;
+uint32_t defaultTaskBuffer[ 512 ];
+osStaticThreadDef_t defaultTaskControlBlock;
 /* USER CODE BEGIN PV */
 NUM_OF_DEVICES num_of_devices;
 MCMD_HandleTypedef mcmd4_struct;
@@ -84,6 +88,8 @@ static void MX_USART3_UART_Init(void);
 static void MX_ETH_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_CAN1_Init(void);
+void StartDefaultTask(void const * argument);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -164,69 +170,101 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
-  printf("Start Initializing CAN System:Begin\n\r");
-   HAL_Delay(100);
 
-   CAN_SystemInit(&hcan1); // F7のCAN通信のinit
+void mcmdSetting(){
+	printf("Start Initializing CAN System:Begin\n\r");
+	   HAL_Delay(100);
 
-   // デバイス数の設定 (今回はmcmd4が1枚)
-   num_of_devices.mcmd3 = 1;
-   num_of_devices.mcmd4 = 0;
-   num_of_devices.air = 0;
-   num_of_devices.servo = 0;
+	   CAN_SystemInit(&hcan1); // F7のCAN通信のinit
 
-   printf("Start Initializing CAN System:End\n\r");
-   HAL_Delay(100);
-   CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
+	   // デバイス数の設定 (今回はmcmd4が1枚)
+	   num_of_devices.mcmd3 = 1;
+	   num_of_devices.mcmd4 = 0;
+	   num_of_devices.air = 0;
+	   num_of_devices.servo = 0;
 
-   // ここからはCANモジュール基板の設定
-    // 接続先のMCMDの設定
-    mcmd4_struct.device.node_type = NODE_MCMD3;  // nodeのタイプ (NODE_MCMD3など)
-    mcmd4_struct.device.node_id = 1;  // 基板の番号 (基板上の半固定抵抗を回す事で設定できる)
-    mcmd4_struct.device.device_num = 0;  // モーターの番号(MCMDなら0と1の2つが選べる)
+	   printf("Start Initializing CAN System:End\n\r");
+	   HAL_Delay(100);
+	   CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
 
-    // 制御パラメータの設定
-    mcmd4_struct.ctrl_param.ctrl_type = MCMD_CTRL_POS;  //制御タイプを設定
-    mcmd4_struct.ctrl_param.PID_param.kp = 0.3f;  // Pゲイン 1.0
-    mcmd4_struct.ctrl_param.PID_param.ki = 0.0f;  // Iゲイン 0.0
-    mcmd4_struct.ctrl_param.PID_param.kd = 0.0f;  // Dゲイン 0.0 (Dゲインは使いにくい)
-    mcmd4_struct.ctrl_param.accel_limit = ACCEL_LIMIT_ENABLE;  // PIDの偏差をclipするか
-    mcmd4_struct.ctrl_param.accel_limit_size = 2.0f;  // PIDの偏差をclipする場合の絶対値のmax値
-    mcmd4_struct.ctrl_param.feedback = MCMD_FB_ENABLE;  // MCMDからF7にフィードバックを送信するか否か
-    mcmd4_struct.ctrl_param.timup_monitor = TIMUP_MONITOR_DISABLE;  // timeupは未実装なのでDISABLE。
-    mcmd4_struct.enc_dir = MCMD_DIR_FW;  // Encoderの回転方向設定
-    mcmd4_struct.rot_dir = MCMD_DIR_BC;  // モーターの回転方向設定
-    mcmd4_struct.quant_per_unit = 59.0/6400.0f;  // エンコーダーの分解能に対する制御値の変化量の割合
+	   // ここからはCANモジュール基板の設定
+	    // 接続先のMCMDの設定
+	    mcmd4_struct.device.node_type = NODE_MCMD3;  // nodeのタイプ (NODE_MCMD3など)
+	    mcmd4_struct.device.node_id = 1;  // 基板の番号 (基板上の半固定抵抗を回す事で設定できる)
+	    mcmd4_struct.device.device_num = 0;  // モーターの番号(MCMDなら0と1の2つが選べる)
 
-    // 原点サーチの設定
-    mcmd4_struct.limit_sw_type = LIMIT_SW_NC;  // 原点サーチにNomaly Closedのスイッチを用いる
-    mcmd4_struct.calib = CALIBRATION_DISABLE;  // 原点サーチを行う。
-    mcmd4_struct.calib_duty = 0.1f;  // 原点サーチ時のduty
-    mcmd4_struct.offset = 0.0f;  // 原点のオフセット
-    mcmd4_struct.fb_type = MCMD_FB_POS;  // 読み取った位置情報をF7にフィードバックする。
+	    // 制御パラメータの設定
+	    mcmd4_struct.ctrl_param.ctrl_type = MCMD_CTRL_POS;  //制御タイプを設定
+	    mcmd4_struct.ctrl_param.PID_param.kp = 0.3f;  // Pゲイン 1.0
+	    mcmd4_struct.ctrl_param.PID_param.ki = 0.0f;  // Iゲイン 0.0
+	    mcmd4_struct.ctrl_param.PID_param.kd = 0.0f;  // Dゲイン 0.0 (Dゲインは使いにくい)
+	    mcmd4_struct.ctrl_param.accel_limit = ACCEL_LIMIT_ENABLE;  // PIDの偏差をclipするか
+	    mcmd4_struct.ctrl_param.accel_limit_size = 2.0f;  // PIDの偏差をclipする場合の絶対値のmax値
+	    mcmd4_struct.ctrl_param.feedback = MCMD_FB_ENABLE;  // MCMDからF7にフィードバックを送信するか否か
+	    mcmd4_struct.ctrl_param.timup_monitor = TIMUP_MONITOR_DISABLE;  // timeupは未実装なのでDISABLE。
+	    mcmd4_struct.enc_dir = MCMD_DIR_FW;  // Encoderの回転方向設定
+	    mcmd4_struct.rot_dir = MCMD_DIR_BC;  // モーターの回転方向設定
+	    mcmd4_struct.quant_per_unit = 59.0/6400.0f;  // エンコーダーの分解能に対する制御値の変化量の割合
+
+	    // 原点サーチの設定
+	    mcmd4_struct.limit_sw_type = LIMIT_SW_NC;  // 原点サーチにNomaly Closedのスイッチを用いる
+	    mcmd4_struct.calib = CALIBRATION_DISABLE;  // 原点サーチを行う。
+	    mcmd4_struct.calib_duty = 0.1f;  // 原点サーチ時のduty
+	    mcmd4_struct.offset = 0.0f;  // 原点のオフセット
+	    mcmd4_struct.fb_type = MCMD_FB_POS;  // 読み取った位置情報をF7にフィードバックする。
 
 
-    // パラメータなどの設定と動作命令をMCMDに送信する
-     MCMD_init(&mcmd4_struct);
-     HAL_Delay(10);
-     MCMD_Calib(&mcmd4_struct);  // キャリブレーションを行う
-     HAL_Delay(2000);  // キャリブレーションが終わるまで待つ
-     MCMD_SetTarget(&mcmd4_struct, 30.0f);  // 目標値(0.0)を設定
-     HAL_Delay(10);
-     MCMD_Control_Enable(&mcmd4_struct);  // 制御開始
-     printf("start");
-     HAL_Delay(10);
-     for(;;){
-		 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
-		 printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
-		 HAL_Delay(10);
-         	      }
+	    // パラメータなどの設定と動作命令をMCMDに送信する
+	     MCMD_init(&mcmd4_struct);
+	     HAL_Delay(10);
+	     MCMD_Calib(&mcmd4_struct);  // キャリブレーションを行う
+	     HAL_Delay(2000);  // キャリブレーションが終わるまで待つ
+	     MCMD_SetTarget(&mcmd4_struct, 30.0f);  // 目標値(0.0)を設定
+	     HAL_Delay(10);
+	     MCMD_Control_Enable(&mcmd4_struct);  // 制御開始
+	     printf("start");
+	     HAL_Delay(10);
+	     for(;;){
+			 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
+			 printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
+			 HAL_Delay(10);
+	         	      }
+}
 
+//mcmdSetting();
 
 
 
   /* USER CODE END 2 */
 
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* definition and creation of defaultTask */
+  osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512, defaultTaskBuffer, &defaultTaskControlBlock);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* Start scheduler */
+  osKernelStart();
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -462,7 +500,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
 
 }
@@ -525,6 +563,25 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+	  HAL_GPIO_TogglePin(GPIOB, LD2_Pin);  // PINのPin stateを反転
+	  osDelay(500);  // 500ms停止 (この間に他のタスクが実行されるイメージ)
+  }
+  /* USER CODE END 5 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
