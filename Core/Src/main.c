@@ -74,6 +74,9 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 osThreadId defaultTaskHandle;
 uint32_t defaultTaskBuffer[ 512 ];
 osStaticThreadDef_t defaultTaskControlBlock;
+osThreadId systemCheckTaskHandle;
+uint32_t systemCheckTaskBuffer[ 512 ];
+osStaticThreadDef_t systemCheckTaskControlBlock;
 /* USER CODE BEGIN PV */
 NUM_OF_DEVICES num_of_devices;
 MCMD_HandleTypedef mcmd4_struct;
@@ -89,6 +92,7 @@ static void MX_ETH_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_CAN1_Init(void);
 void StartDefaultTask(void const * argument);
+void StartTask02(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -224,11 +228,6 @@ void mcmdSetting(){
 	     MCMD_Control_Enable(&mcmd4_struct);  // 制御開始
 	     printf("start");
 	     HAL_Delay(10);
-	     for(;;){
-			 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
-			 printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
-			 HAL_Delay(10);
-	         	      }
 }
 
 //mcmdSetting();
@@ -257,6 +256,10 @@ void mcmdSetting(){
   /* definition and creation of defaultTask */
   osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512, defaultTaskBuffer, &defaultTaskControlBlock);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* definition and creation of systemCheckTask */
+  osThreadStaticDef(systemCheckTask, StartTask02, osPriorityLow, 0, 512, systemCheckTaskBuffer, &systemCheckTaskControlBlock);
+  systemCheckTaskHandle = osThreadCreate(osThread(systemCheckTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -577,10 +580,37 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  HAL_GPIO_TogglePin(GPIOB, LD2_Pin);  // PINのPin stateを反転
-	  osDelay(500);  // 500ms停止 (この間に他のタスクが実行されるイメージ)
+	  osDelay(1000);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartTask02 */
+/**
+* @brief Function implementing the systemCheckTask thread.
+* @param argument: Not used
+* @retval None
+*/
+void freeRTOSChecker(){//無限ループの中で実行
+	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);  // PINのPin stateを反転
+}
+
+void mcmdChecker(){//無限ループの中で実行
+	mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
+	printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
+}
+/* USER CODE END Header_StartTask02 */
+void StartTask02(void const * argument)
+{
+  /* USER CODE BEGIN StartTask02 */
+  /* Infinite loop */
+  for(;;)
+  {
+	  freeRTOSChecker();
+	  mcmdChecker();
+      osDelay(1000);
+  }
+  /* USER CODE END StartTask02 */
 }
 
 /**
