@@ -15,6 +15,7 @@
 ../Core/Src/main.c:498:13:MX_DMA_Init	16	static
 ../Core/Src/main.c:516:13:MX_GPIO_Init	56	static
 ../Core/Src/main.c:577:6:StartDefaultTask	16	static
-../Core/Src/main.c:595:6:mcmdChecker	24	static
-../Core/Src/main.c:601:6:StartTask02	16	static
-../Core/Src/main.c:617:6:Error_Handler	4	static,ignoring_inline_asm
+../Core/Src/main.c:594:6:freeRTOSChecker	8	static
+../Core/Src/main.c:598:6:mcmdChecker	24	static
+../Core/Src/main.c:603:6:StartTask02	16	static
+../Core/Src/main.c:620:6:Error_Handler	4	static,ignoring_inline_asm

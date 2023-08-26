@@ -580,8 +580,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  HAL_GPIO_TogglePin(GPIOB, LD2_Pin);  // PINのPin stateを反転
-	  osDelay(500);  // 500ms停止 (この間に他のタスクが実行されるイメージ)
+	  osDelay(1000);
   }
   /* USER CODE END 5 */
 }
@@ -592,10 +591,13 @@ void StartDefaultTask(void const * argument)
 * @param argument: Not used
 * @retval None
 */
-void mcmdChecker(){
+void freeRTOSChecker(){//無限ループの中で実行
+	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);  // PINのPin stateを反転
+}
+
+void mcmdChecker(){//無限ループの中で実行
 	mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
 	printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
-	osDelay(1000);
 }
 /* USER CODE END Header_StartTask02 */
 void StartTask02(void const * argument)
@@ -604,8 +606,9 @@ void StartTask02(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+	  freeRTOSChecker();
 	  mcmdChecker();
-    osDelay(1);
+      osDelay(1000);
   }
   /* USER CODE END StartTask02 */
 }
