@@ -74,7 +74,6 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 osThreadId defaultTaskHandle;
 uint32_t defaultTaskBuffer[ 512 ];
 osStaticThreadDef_t defaultTaskControlBlock;
-osThreadId systemCheckTaskHandle;
 /* USER CODE BEGIN PV */
 NUM_OF_DEVICES num_of_devices;
 MCMD_HandleTypedef mcmd4_struct;
@@ -90,7 +89,6 @@ static void MX_ETH_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_CAN1_Init(void);
 void StartDefaultTask(void const * argument);
-void StartsystemCheck(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -187,7 +185,7 @@ void mcmdSetting(){
 
 	   printf("Start Initializing CAN System:End\n\r");
 	   HAL_Delay(100);
-	   //CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
+	   CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
 
 	   // ここからはCANモジュール基板の設定
 	    // 接続先のMCMDの設定
@@ -223,12 +221,17 @@ void mcmdSetting(){
 	     HAL_Delay(2000);  // キャリブレーションが終わるまで待つ
 	     MCMD_SetTarget(&mcmd4_struct, 30.0f);  // 目標値(0.0)を設定
 	     HAL_Delay(10);
-	     //MCMD_Control_Enable(&mcmd4_struct);  // 制御開始
-	     //printf("start");
+	     MCMD_Control_Enable(&mcmd4_struct);  // 制御開始
+	     printf("start");
 	     HAL_Delay(10);
+	     for(;;){
+			 mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
+			 printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
+			 HAL_Delay(10);
+	         	      }
 }
 
-mcmdSetting();
+//mcmdSetting();
 
 
 
@@ -254,10 +257,6 @@ mcmdSetting();
   /* definition and creation of defaultTask */
   osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512, defaultTaskBuffer, &defaultTaskControlBlock);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-
-  /* definition and creation of systemCheckTask */
-  osThreadDef(systemCheckTask, StartsystemCheck, osPriorityIdle, 0, 512);
-  systemCheckTaskHandle = osThreadCreate(osThread(systemCheckTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -582,25 +581,6 @@ void StartDefaultTask(void const * argument)
 	  osDelay(500);  // 500ms停止 (この間に他のタスクが実行されるイメージ)
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_StartsystemCheck */
-/**
-* @brief Function implementing the systemCheckTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartsystemCheck */
-void StartsystemCheck(void const * argument)
-{
-  /* USER CODE BEGIN StartsystemCheck */
-  /* Infinite loop */
-	for(;;){
-	  mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
-	  printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
-	  osDelay(1000);
-		         	      }
-  /* USER CODE END StartsystemCheck */
 }
 
 /**
