@@ -154,22 +154,24 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
     WhenCANRxFifo0MsgPending(hcan, &num_of_devices);
 }
 
-void mcmdSetting(){
+void canSetting(){
 	printf("Start Initializing CAN System:Begin\n\r");
-	   HAL_Delay(100);
+	HAL_Delay(100);
 
-	   CAN_SystemInit(&hcan1); // F7のCAN通信のinit
+	CAN_SystemInit(&hcan1); // F7のCAN通信のinit
 
-	   // デバイス数の設定 (今回はmcmd4が1枚)
-	   num_of_devices.mcmd3 = 1;
-	   num_of_devices.mcmd4 = 0;
-	   num_of_devices.air = 0;
-	   num_of_devices.servo = 0;
+	// デバイス数の設定 (今回はmcmd4が1枚)
+	num_of_devices.mcmd3 = 1;
+	num_of_devices.mcmd4 = 0;
+	num_of_devices.air = 0;
+	num_of_devices.servo = 0;
 
-	   printf("Start Initializing CAN System:End\n\r");
-	   HAL_Delay(100);
-	   //CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
+	printf("Start Initializing CAN System:End\n\r");
+	HAL_Delay(100);
+	//CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
+}
 
+void mcmdSetting(){
 	   // ここからはCANモジュール基板の設定
 	    // 接続先のMCMDの設定
 	    mcmd4_struct.device.node_type = NODE_MCMD3;  // nodeのタイプ (NODE_MCMD3など)
@@ -260,6 +262,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   //記事ではmcmdなどの初期化コードを描くことになっている場所
+  canSetting();
   mcmdSetting();
   activateMcmdControll();
   servoSetting();
