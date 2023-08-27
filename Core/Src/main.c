@@ -613,7 +613,7 @@ void mcmdChecker(){//無限ループの中で実行
 
 void servoChecker(){
 	ServoDriver_Init(&servo_device, &servo_param);  // Servo基板にパラメータを送信
-	HAL_Delay(100);  // 適切なdelayを入れる
+	osDelay(100);  // 適切なdelayを入れる
 	ServoDriver_SendValue(&servo_device, 20.0f);  // サーボが20.0度になるように回転させる
 }
 
@@ -621,13 +621,13 @@ void airChecker(){
 	for(uint8_t i=PORT_1; i<=PORT_8; i++){  //すべてのポートを初期化しないとAir基板は動かない
 	    air_device.device_num = i; // (i番ポートを指定)
 	    AirCylinder_Init(&air_device, AIR_OFF);
-	    HAL_Delay(10);  // このdelayは必要
+	    osDelay(10);  // このdelayは必要
 	  }
 	  air_device.device_num=0; // とりあえず0番ポートのエアシリンダを動かします。
 	  AirCylinder_SendOutput(&air_device, AIR_ON);  // 0番ポートの電磁弁がonになる
-	  HAL_Delay(1000);
+	  osDelay(1000);
 	  AirCylinder_SendOutput(&air_device, AIR_OFF); // 0番ポートの電磁弁がoffになる
-	  HAL_Delay(1000);
+	  osDelay(1000);
 }
 /* USER CODE END Header_StartSystemCheckTask */
 void StartSystemCheckTask(void *argument)

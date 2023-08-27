@@ -4160,9 +4160,9 @@ void servoChecker(){
  800201c:	4906      	ldr	r1, [pc, #24]	; (8002038 <servoChecker+0x20>)
  800201e:	4807      	ldr	r0, [pc, #28]	; (800203c <servoChecker+0x24>)
  8002020:	f7ff f96a 	bl	80012f8 <ServoDriver_Init>
-	HAL_Delay(100);  // 適切なdelayを入れる
+	osDelay(100);  // 適切なdelayを入れる
  8002024:	2064      	movs	r0, #100	; 0x64
- 8002026:	f000 fd71 	bl	8002b0c <HAL_Delay>
+ 8002026:	f007 fd43 	bl	8009ab0 <osDelay>
 	ServoDriver_SendValue(&servo_device, 20.0f);  // サーボが20.0度になるように回転させる
  800202a:	eeb3 0a04 	vmov.f32	s0, #52	; 0x41a00000  20.0
  800202e:	4803      	ldr	r0, [pc, #12]	; (800203c <servoChecker+0x24>)
@@ -4191,9 +4191,9 @@ void airChecker(){
  8002052:	2100      	movs	r1, #0
  8002054:	4811      	ldr	r0, [pc, #68]	; (800209c <airChecker+0x5c>)
  8002056:	f7ff f9ac 	bl	80013b2 <AirCylinder_Init>
-	    HAL_Delay(10);  // このdelayは必要
+	    osDelay(10);  // このdelayは必要
  800205a:	200a      	movs	r0, #10
- 800205c:	f000 fd56 	bl	8002b0c <HAL_Delay>
+ 800205c:	f007 fd28 	bl	8009ab0 <osDelay>
 	for(uint8_t i=PORT_1; i<=PORT_8; i++){  //すべてのポートを初期化しないとAir基板は動かない
  8002060:	79fb      	ldrb	r3, [r7, #7]
  8002062:	3301      	adds	r3, #1
@@ -4210,16 +4210,16 @@ void airChecker(){
  8002072:	2101      	movs	r1, #1
  8002074:	4809      	ldr	r0, [pc, #36]	; (800209c <airChecker+0x5c>)
  8002076:	f7ff f9b7 	bl	80013e8 <AirCylinder_SendOutput>
-	  HAL_Delay(1000);
+	  osDelay(1000);
  800207a:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 800207e:	f000 fd45 	bl	8002b0c <HAL_Delay>
+ 800207e:	f007 fd17 	bl	8009ab0 <osDelay>
 	  AirCylinder_SendOutput(&air_device, AIR_OFF); // 0番ポートの電磁弁がoffになる
  8002082:	2100      	movs	r1, #0
  8002084:	4805      	ldr	r0, [pc, #20]	; (800209c <airChecker+0x5c>)
  8002086:	f7ff f9af 	bl	80013e8 <AirCylinder_SendOutput>
-	  HAL_Delay(1000);
+	  osDelay(1000);
  800208a:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 800208e:	f000 fd3d 	bl	8002b0c <HAL_Delay>
+ 800208e:	f007 fd0f 	bl	8009ab0 <osDelay>
 }
  8002092:	bf00      	nop
  8002094:	3708      	adds	r7, #8
