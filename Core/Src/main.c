@@ -28,6 +28,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -71,12 +72,42 @@ DMA_HandleTypeDef hdma_usart3_tx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
-osThreadId defaultTaskHandle;
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
 uint32_t defaultTaskBuffer[ 512 ];
 osStaticThreadDef_t defaultTaskControlBlock;
-osThreadId systemCheckTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .cb_mem = &defaultTaskControlBlock,
+  .cb_size = sizeof(defaultTaskControlBlock),
+  .stack_mem = &defaultTaskBuffer[0],
+  .stack_size = sizeof(defaultTaskBuffer),
+  .priority = (osPriority_t) osPriorityRealtime,
+};
+/* Definitions for systemCheckTask */
+osThreadId_t systemCheckTaskHandle;
 uint32_t systemCheckTaskBuffer[ 512 ];
 osStaticThreadDef_t systemCheckTaskControlBlock;
+const osThreadAttr_t systemCheckTask_attributes = {
+  .name = "systemCheckTask",
+  .cb_mem = &systemCheckTaskControlBlock,
+  .cb_size = sizeof(systemCheckTaskControlBlock),
+  .stack_mem = &systemCheckTaskBuffer[0],
+  .stack_size = sizeof(systemCheckTaskBuffer),
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for ControllerTask */
+osThreadId_t ControllerTaskHandle;
+uint32_t ControllerTaskBuffer[ 512 ];
+osStaticThreadDef_t ControllerTaskControlBlock;
+const osThreadAttr_t ControllerTask_attributes = {
+  .name = "ControllerTask",
+  .cb_mem = &ControllerTaskControlBlock,
+  .cb_size = sizeof(ControllerTaskControlBlock),
+  .stack_mem = &ControllerTaskBuffer[0],
+  .stack_size = sizeof(ControllerTaskBuffer),
+  .priority = (osPriority_t) osPriorityNormal7,
+};
 /* USER CODE BEGIN PV */
 NUM_OF_DEVICES num_of_devices;
 MCMD_HandleTypedef mcmd4_struct;
@@ -91,8 +122,9 @@ static void MX_USART3_UART_Init(void);
 static void MX_ETH_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_CAN1_Init(void);
-void StartDefaultTask(void const * argument);
-void StartTask02(void const * argument);
+void StartDefaultTask(void *argument);
+void StartTask02(void *argument);
+void StartTask03(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -236,6 +268,9 @@ mcmdSetting();
 
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
@@ -253,17 +288,22 @@ mcmdSetting();
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512, defaultTaskBuffer, &defaultTaskControlBlock);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* definition and creation of systemCheckTask */
-  osThreadStaticDef(systemCheckTask, StartTask02, osPriorityLow, 0, 512, systemCheckTaskBuffer, &systemCheckTaskControlBlock);
-  systemCheckTaskHandle = osThreadCreate(osThread(systemCheckTask), NULL);
+  /* creation of systemCheckTask */
+  systemCheckTaskHandle = osThreadNew(StartTask02, NULL, &systemCheckTask_attributes);
+
+  /* creation of ControllerTask */
+  ControllerTaskHandle = osThreadNew(StartTask03, NULL, &ControllerTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
   osKernelStart();
@@ -574,7 +614,7 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
+void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
@@ -600,7 +640,7 @@ void mcmdChecker(){//無限ループの中で実行
 	printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
 }
 /* USER CODE END Header_StartTask02 */
-void StartTask02(void const * argument)
+void StartTask02(void *argument)
 {
   /* USER CODE BEGIN StartTask02 */
   /* Infinite loop */
@@ -611,6 +651,24 @@ void StartTask02(void const * argument)
       osDelay(1000);
   }
   /* USER CODE END StartTask02 */
+}
+
+/* USER CODE BEGIN Header_StartTask03 */
+/**
+* @brief Function implementing the ControllerTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask03 */
+void StartTask03(void *argument)
+{
+  /* USER CODE BEGIN StartTask03 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTask03 */
 }
 
 /**
