@@ -92,6 +92,10 @@ const osThreadAttr_t ControllerTask_attributes = {
 NUM_OF_DEVICES num_of_devices;
 MCMD_HandleTypedef mcmd4_struct;
 MCMD_Feedback_Typedef mcmd_fb;//MCMDからのフィードバックを受け取る構造体を定義
+
+// CANモジュール基板の設定
+  CANServo_Param_Typedef servo_param;
+  CAN_Device servo_device;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -191,18 +195,33 @@ void mcmdSetting(){
 	    mcmd4_struct.calib_duty = 0.1f;  // 原点サーチ時のduty
 	    mcmd4_struct.offset = 0.0f;  // 原点のオフセット
 	    mcmd4_struct.fb_type = MCMD_FB_POS;  // 読み取った位置情報をF7にフィードバックする。
+}
 
+void activateMcmdControll(){
+	// パラメータなどの設定と動作命令をMCMDに送信する
+	 MCMD_init(&mcmd4_struct);
+	 HAL_Delay(10);
+	 MCMD_Calib(&mcmd4_struct);  // キャリブレーションを行う
+	 HAL_Delay(2000);  // キャリブレーションが終わるまで待つ
+	 MCMD_SetTarget(&mcmd4_struct, 30.0f);  // 目標値(0.0)を設定
+	 HAL_Delay(10);
+	 MCMD_Control_Enable(&mcmd4_struct);  // 制御開始
+	 printf("start");
+	 HAL_Delay(10);
+}
 
-	    // パラメータなどの設定と動作命令をMCMDに送信する
-	     MCMD_init(&mcmd4_struct);
-	     HAL_Delay(10);
-	     MCMD_Calib(&mcmd4_struct);  // キャリブレーションを行う
-	     HAL_Delay(2000);  // キャリブレーションが終わるまで待つ
-	     MCMD_SetTarget(&mcmd4_struct, 30.0f);  // 目標値(0.0)を設定
-	     HAL_Delay(10);
-	     MCMD_Control_Enable(&mcmd4_struct);  // 制御開始
-	     printf("start");
-	     HAL_Delay(10);
+void servoSetting(){
+	// Servo基板のdevice設定
+	servo_device.node_type = NODE_SERVO;
+	servo_device.node_id = 2;
+	servo_device.device_num = 0;//0~3を指定する
+
+	// Servo基板のパラメータ (offset以外はあまり変更しない)
+	servo_param.angle_range=270.0f;//サーボの動作範囲
+	servo_param.angle_offset=0.0f;//原点の位置
+	servo_param.pulse_width_max=2.4f;//サーボの制御のPWM信号のパルス幅の最大値
+	servo_param.pulse_width_min=0.5f;//サーボの制御のPWM信号のパルス幅の最小値
+	servo_param.pwm_frequency=50;//PWM周波数（この変更は未実装
 }
 /* USER CODE END 0 */
 
@@ -242,7 +261,8 @@ int main(void)
 
   //記事ではmcmdなどの初期化コードを描くことになっている場所
   mcmdSetting();
-
+  activateMcmdControll();
+  servoSetting();
 
 
   /* USER CODE END 2 */
@@ -578,10 +598,17 @@ void mcmdChecker(){//無限ループの中で実行
 	mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
 	printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
 }
+
+void servoChecker(){
+	ServoDriver_Init(&servo_device, &servo_param);  // Servo基板にパラメータを送信
+	HAL_Delay(100);  // 適切なdelayを入れる
+	ServoDriver_SendValue(&servo_device, 20.0f);  // サーボが20.0度になるように回転させる
+}
 /* USER CODE END Header_StartSystemCheckTask */
 void StartSystemCheckTask(void *argument)
 {
   /* USER CODE BEGIN StartSystemCheckTask */
+	servoChecker();
   /* Infinite loop */
   for(;;)
   {
