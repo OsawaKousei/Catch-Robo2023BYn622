@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <CAN_Main.h>
+#include <UDPController.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,8 +102,8 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_CAN1_Init(void);
 void StartDefaultTask(void *argument);
-void StartTask02(void *argument);
-void StartTask03(void *argument);
+void StartSystemCheckTask(void *argument);
+void StartControllerTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -148,41 +149,6 @@ void HAL_CAN_TxMailbox2AbortCallback(CAN_HandleTypeDef *hcan){
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
     WhenCANRxFifo0MsgPending(hcan, &num_of_devices);
 }
-/* USER CODE END 0 */
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
-  SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_USART3_UART_Init();
-  MX_USB_OTG_FS_PCD_Init();
-  MX_CAN1_Init();
-  /* USER CODE BEGIN 2 */
 
 void mcmdSetting(){
 	printf("Start Initializing CAN System:Begin\n\r");
@@ -238,8 +204,44 @@ void mcmdSetting(){
 	     printf("start");
 	     HAL_Delay(10);
 }
+/* USER CODE END 0 */
 
-mcmdSetting();
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_USART3_UART_Init();
+  MX_USB_OTG_FS_PCD_Init();
+  MX_CAN1_Init();
+  /* USER CODE BEGIN 2 */
+
+  //記事ではmcmdなどの初期化コードを描くことになっている場所
+  mcmdSetting();
 
 
 
@@ -269,10 +271,10 @@ mcmdSetting();
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* creation of systemCheckTask */
-  systemCheckTaskHandle = osThreadNew(StartTask02, NULL, &systemCheckTask_attributes);
+  systemCheckTaskHandle = osThreadNew(StartSystemCheckTask, NULL, &systemCheckTask_attributes);
 
   /* creation of ControllerTask */
-  ControllerTaskHandle = osThreadNew(StartTask03, NULL, &ControllerTask_attributes);
+  ControllerTaskHandle = osThreadNew(StartControllerTask, NULL, &ControllerTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -547,15 +549,22 @@ void StartDefaultTask(void *argument)
   /* init code for LWIP */
   MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
+  HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);  // LED1 消灯
   /* Infinite loop */
   for(;;)
   {
-	  osDelay(1000);
+	uint16_t button_data = UDPController_GetControllerButtons();  // buttonの入力を取得
+	if((button_data & CONTROLLER_CIRCLE) != 0){  // oボタンが押されている場合
+	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1 点灯
+	}else{
+	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);  // LED1 消灯
+	}
+	osDelay(100);
   }
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_StartTask02 */
+/* USER CODE BEGIN Header_StartSystemCheckTask */
 /**
 * @brief Function implementing the systemCheckTask thread.
 * @param argument: Not used
@@ -569,36 +578,33 @@ void mcmdChecker(){//無限ループの中で実行
 	mcmd_fb = Get_MCMD_Feedback(&(mcmd4_struct.device));
 	printf("value of tyokudou %d\r\n",(int)(mcmd_fb.value));
 }
-/* USER CODE END Header_StartTask02 */
-void StartTask02(void *argument)
+/* USER CODE END Header_StartSystemCheckTask */
+void StartSystemCheckTask(void *argument)
 {
-  /* USER CODE BEGIN StartTask02 */
+  /* USER CODE BEGIN StartSystemCheckTask */
   /* Infinite loop */
   for(;;)
   {
 	  freeRTOSChecker();
 	  mcmdChecker();
-      osDelay(1000);
+	  osDelay(1000);
   }
-  /* USER CODE END StartTask02 */
+  /* USER CODE END StartSystemCheckTask */
 }
 
-/* USER CODE BEGIN Header_StartTask03 */
+/* USER CODE BEGIN Header_StartControllerTask */
 /**
 * @brief Function implementing the ControllerTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartTask03 */
-void StartTask03(void *argument)
+/* USER CODE END Header_StartControllerTask */
+void StartControllerTask(void *argument)
 {
-  /* USER CODE BEGIN StartTask03 */
+  /* USER CODE BEGIN StartControllerTask */
   /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartTask03 */
+	UDPControllerReceive(argument);
+  /* USER CODE END StartControllerTask */
 }
 
 /**

@@ -85,7 +85,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../CANLib/Defines/Inc/CAN_System_Def.h \
  ../CANLib/Defines/Inc/MCMD_CAN_Def.h \
  ../CANLib/Defines/Inc/CAN_System_Def.h ../Core/Inc/pid.h \
- ../Core/Inc/main.h ../CANLib/Defines/Inc/CAN_Servo_Def.h
+ ../Core/Inc/main.h ../CANLib/Defines/Inc/CAN_Servo_Def.h \
+ ../Core/Inc/UDPController.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/sockets.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/inet.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/errno.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Core/Inc/stm32f7xx_hal_conf.h:
@@ -176,3 +180,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/pid.h:
 ../Core/Inc/main.h:
 ../CANLib/Defines/Inc/CAN_Servo_Def.h:
+../Core/Inc/UDPController.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/sockets.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/inet.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/errno.h:
