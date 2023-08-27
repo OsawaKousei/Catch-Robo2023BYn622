@@ -94,8 +94,11 @@ MCMD_HandleTypedef mcmd4_struct;
 MCMD_Feedback_Typedef mcmd_fb;//MCMDからのフィードバックを受け取る構造体を定義
 
 // CANモジュール基板の設定
-  CANServo_Param_Typedef servo_param;
-  CAN_Device servo_device;
+CANServo_Param_Typedef servo_param;
+CAN_Device servo_device;
+
+//Air基盤の設定
+CAN_Device air_device;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -225,6 +228,11 @@ void servoSetting(){
 	servo_param.pulse_width_min=0.5f;//サーボの制御のPWM信号のパルス幅の最小値
 	servo_param.pwm_frequency=50;//PWM周波数（この変更は未実装
 }
+
+void airSetting(){
+	air_device.node_type = NODE_AIR; //エアシリンダ基盤であることを示す
+	air_device.node_id = 0; //基板の番号
+}
 /* USER CODE END 0 */
 
 /**
@@ -266,6 +274,7 @@ int main(void)
   mcmdSetting();
   activateMcmdControll();
   servoSetting();
+  airSetting();
 
 
   /* USER CODE END 2 */
@@ -607,11 +616,25 @@ void servoChecker(){
 	HAL_Delay(100);  // 適切なdelayを入れる
 	ServoDriver_SendValue(&servo_device, 20.0f);  // サーボが20.0度になるように回転させる
 }
+
+void airChecker(){
+	for(uint8_t i=PORT_1; i<=PORT_8; i++){  //すべてのポートを初期化しないとAir基板は動かない
+	    air_device.device_num = i; // (i番ポートを指定)
+	    AirCylinder_Init(&air_device, AIR_OFF);
+	    HAL_Delay(10);  // このdelayは必要
+	  }
+	  air_device.device_num=0; // とりあえず0番ポートのエアシリンダを動かします。
+	  AirCylinder_SendOutput(&air_device, AIR_ON);  // 0番ポートの電磁弁がonになる
+	  HAL_Delay(1000);
+	  AirCylinder_SendOutput(&air_device, AIR_OFF); // 0番ポートの電磁弁がoffになる
+	  HAL_Delay(1000);
+}
 /* USER CODE END Header_StartSystemCheckTask */
 void StartSystemCheckTask(void *argument)
 {
   /* USER CODE BEGIN StartSystemCheckTask */
 	servoChecker();
+	airChecker();
   /* Infinite loop */
   for(;;)
   {
