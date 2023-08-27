@@ -164,14 +164,14 @@ void canSetting(){
 	CAN_SystemInit(&hcan1); // F7のCAN通信のinit
 
 	// デバイス数の設定 (今回はmcmd4が1枚)
-	num_of_devices.mcmd3 = 1;
+	num_of_devices.mcmd3 = 0;
 	num_of_devices.mcmd4 = 0;
 	num_of_devices.air = 0;
-	num_of_devices.servo = 0;
+	num_of_devices.servo = 1;
 
 	printf("Start Initializing CAN System:End\n\r");
 	HAL_Delay(100);
-	//CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
+	CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
 }
 
 void mcmdSetting(){
@@ -218,7 +218,7 @@ void activateMcmdControll(){
 void servoSetting(){
 	// Servo基板のdevice設定
 	servo_device.node_type = NODE_SERVO;
-	servo_device.node_id = 2;
+	servo_device.node_id = 0;
 	servo_device.device_num = 0;//0~3を指定する
 
 	// Servo基板のパラメータ (offset以外はあまり変更しない)
@@ -271,10 +271,10 @@ int main(void)
 
   //記事ではmcmdなどの初期化コードを描くことになっている場所
   canSetting();
-  mcmdSetting();
-  activateMcmdControll();
+  //mcmdSetting();
+  //activateMcmdControll();
   servoSetting();
-  airSetting();
+  //airSetting();
 
 
   /* USER CODE END 2 */
@@ -634,12 +634,12 @@ void StartSystemCheckTask(void *argument)
 {
   /* USER CODE BEGIN StartSystemCheckTask */
 	servoChecker();
-	airChecker();
+	//airChecker();
   /* Infinite loop */
   for(;;)
   {
 	  freeRTOSChecker();
-	  mcmdChecker();
+	  //mcmdChecker();
 	  osDelay(1000);
   }
   /* USER CODE END StartSystemCheckTask */
