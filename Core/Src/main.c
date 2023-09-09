@@ -164,14 +164,14 @@ void canSetting(){
 	CAN_SystemInit(&hcan1); // F7のCAN通信のinit
 
 	// デバイス数の設定 (今回はmcmd4が1枚)
-	num_of_devices.mcmd3 = 0;
+	num_of_devices.mcmd3 = 1;
 	num_of_devices.mcmd4 = 0;
 	num_of_devices.air = 0;
-	num_of_devices.servo = 1;
+	num_of_devices.servo = 0;
 
 	printf("Start Initializing CAN System:End\n\r");
 	HAL_Delay(100);
-	CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
+	//CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
 }
 
 void mcmdSetting(){
@@ -273,9 +273,9 @@ int main(void)
   canSetting();
   //mcmdSetting();
   //activateMcmdControll();
-  servoSetting();
+  //servoSetting();
   //airSetting();
-
+  printf("detect0\r\n");
 
   /* USER CODE END 2 */
 
@@ -575,6 +575,16 @@ static void MX_GPIO_Init(void)
   * @param  argument: Not used
   * @retval None
   */
+void controllerDefault()
+{
+	uint16_t button_data = UDPController_GetControllerButtons();  // buttonの入力を取得
+	if((button_data & CONTROLLER_CIRCLE) != 0){  // oボタンが押されている場合
+	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1 点灯
+	}else{
+	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);  // LED1 消灯
+	}
+	osDelay(100);
+}
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
@@ -585,13 +595,7 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	uint16_t button_data = UDPController_GetControllerButtons();  // buttonの入力を取得
-	if((button_data & CONTROLLER_CIRCLE) != 0){  // oボタンが押されている場合
-	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1 点灯
-	}else{
-	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);  // LED1 消灯
-	}
-	osDelay(100);
+	controllerDefault();
   }
   /* USER CODE END 5 */
 }
@@ -604,6 +608,7 @@ void StartDefaultTask(void *argument)
 */
 void freeRTOSChecker(){//無限ループの中で実行
 	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);  // PINのPin stateを反転
+	printf("detect2");
 }
 
 void mcmdChecker(){//無限ループの中で実行
@@ -633,8 +638,9 @@ void airChecker(){
 void StartSystemCheckTask(void *argument)
 {
   /* USER CODE BEGIN StartSystemCheckTask */
-	servoChecker();
+	//servoChecker();
 	//airChecker();
+	//printf("detct1");
   /* Infinite loop */
   for(;;)
   {
