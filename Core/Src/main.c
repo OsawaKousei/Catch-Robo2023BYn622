@@ -62,7 +62,7 @@ const osThreadAttr_t defaultTask_attributes = {
   .cb_size = sizeof(defaultTaskControlBlock),
   .stack_mem = &defaultTaskBuffer[0],
   .stack_size = sizeof(defaultTaskBuffer),
-  .priority = (osPriority_t) osPriorityRealtime,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for systemCheckTask */
 osThreadId_t systemCheckTaskHandle;
@@ -74,7 +74,7 @@ const osThreadAttr_t systemCheckTask_attributes = {
   .cb_size = sizeof(systemCheckTaskControlBlock),
   .stack_mem = &systemCheckTaskBuffer[0],
   .stack_size = sizeof(systemCheckTaskBuffer),
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for ControllerTask */
 osThreadId_t ControllerTaskHandle;
@@ -86,7 +86,7 @@ const osThreadAttr_t ControllerTask_attributes = {
   .cb_size = sizeof(ControllerTaskControlBlock),
   .stack_mem = &ControllerTaskBuffer[0],
   .stack_size = sizeof(ControllerTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal7,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
 NUM_OF_DEVICES num_of_devices;
@@ -162,14 +162,14 @@ void canSetting(){
 	CAN_SystemInit(&hcan1); // F7のCAN通信のinit
 
 	// デバイス数の設定 (今回はmcmd4が1枚)
-	num_of_devices.mcmd3 = 1;
+	num_of_devices.mcmd3 = 0;
 	num_of_devices.mcmd4 = 0;
-	num_of_devices.air = 0;
+	num_of_devices.air = 1;
 	num_of_devices.servo = 0;
 
 	printf("Start Initializing CAN System:End\n\r");
 	HAL_Delay(100);
-	//CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
+	CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
 }
 
 void mcmdSetting(){
@@ -582,12 +582,12 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	uint16_t button_data = UDPController_GetControllerButtons();  // buttonの入力を取得
-	if((button_data & CONTROLLER_CIRCLE) != 0){  // oボタンが押されている場合
-	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1 点灯
-	}else{
-	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);  // LED1 消灯
-	}
+//	uint16_t button_data = UDPController_GetControllerButtons();  // buttonの入力を取得
+//	if((button_data & CONTROLLER_CIRCLE) != 0){  // oボタンが押されている場合
+//	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1 点灯
+//	}else{
+//	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);  // LED1 消灯
+//	}
 	osDelay(100);
   }
   /* USER CODE END 5 */
@@ -601,6 +601,8 @@ void StartDefaultTask(void *argument)
 */
 void freeRTOSChecker(){//無限ループの中で実行
 	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);  // PINのPin stateを反転
+	printf("detect01\r\n");
+
 }
 
 void mcmdChecker(){//無限ループの中で実行
@@ -653,7 +655,10 @@ void StartControllerTask(void *argument)
 {
   /* USER CODE BEGIN StartControllerTask */
   /* Infinite loop */
-	UDPControllerReceive(argument);
+	//UDPControllerReceive(argument);
+	for(;;){
+		osDelay(1000);
+	}
   /* USER CODE END StartControllerTask */
 }
 
@@ -689,6 +694,9 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+	  printf("error");
+	  HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1点灯
+	  osDelay(100);
   }
   /* USER CODE END Error_Handler_Debug */
 }

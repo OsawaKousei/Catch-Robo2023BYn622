@@ -93,7 +93,7 @@ void UDPControllerReceive(void const *argument) {
                 memcpy(&controller_raw, d, sizeof(struct controller_data));
             }
         }
-        osDelay(10);
+        osDelay(100);
     }
 
 }
