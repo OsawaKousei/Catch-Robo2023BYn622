@@ -582,13 +582,14 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-//	uint16_t button_data = UDPController_GetControllerButtons();  // buttonの入力を取得
-//	if((button_data & CONTROLLER_CIRCLE) != 0){  // oボタンが押されている場合
-//	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1 点灯
-//	}else{
-//	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);  // LED1 消灯
-//	}
-	osDelay(100);
+	uint16_t button_data = UDPController_GetControllerButtons();  // buttonの入力を取得
+	if((button_data & CONTROLLER_CIRCLE) != 0){  // oボタンが押されている場合
+	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1 点灯
+	}else{
+	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);  // LED1 消灯
+	  osDelay(100);
+	}
+
   }
   /* USER CODE END 5 */
 }
@@ -655,9 +656,9 @@ void StartControllerTask(void *argument)
 {
   /* USER CODE BEGIN StartControllerTask */
   /* Infinite loop */
-	//UDPControllerReceive(argument);
+	UDPControllerReceive(argument);
 	for(;;){
-		osDelay(1000);
+		osDelay(10);
 	}
   /* USER CODE END StartControllerTask */
 }

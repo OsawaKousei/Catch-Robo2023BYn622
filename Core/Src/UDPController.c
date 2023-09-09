@@ -81,13 +81,13 @@ void UDPControllerReceive(void const *argument) {
                 }
 
                 struct controller_data *d = (struct controller_data*) &buffer;
-                printf("(lx, ly, rx, ry) : (%d, %d, %d, %d)\r\n", (int)(d->l_x * 256), (int)(d->l_y * 256), (int)(d->r_x * 256), (int)(d->r_y * 256));
-                printf("button: ");
+                //printf("(lx, ly, rx, ry) : (%d, %d, %d, %d)\r\n", (int)(d->l_x * 256), (int)(d->l_y * 256), (int)(d->r_x * 256), (int)(d->r_y * 256));
+                //printf("button: ");
                 for(int i=0; i<16; i++){
-                    if((d->button >> i) & 1) printf("1");
+                    if((d->button >> i) & 1); //printf("1");
                     else printf("0");
                 }
-                printf("\n\r");
+                //printf("\n\r");
 
 
                 memcpy(&controller_raw, d, sizeof(struct controller_data));
