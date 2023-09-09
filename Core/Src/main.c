@@ -218,7 +218,7 @@ void activateMcmdControll(){
 void servoSetting(){
 	// Servo基板のdevice設定
 	servo_device.node_type = NODE_SERVO;
-	servo_device.node_id = 0;
+	servo_device.node_id = 2;
 	servo_device.device_num = 0;//0~3を指定する
 
 	// Servo基板のパラメータ (offset以外はあまり変更しない)
@@ -271,11 +271,19 @@ int main(void)
 
   //記事ではmcmdなどの初期化コードを描くことになっている場所
   canSetting();
+<<<<<<< HEAD
   //mcmdSetting();
   //activateMcmdControll();
   //servoSetting();
   //airSetting();
   printf("detect0\r\n");
+=======
+  mcmdSetting();
+  activateMcmdControll();
+  servoSetting();
+  airSetting();
+
+>>>>>>> parent of c73977b (servo動作確認)
 
   /* USER CODE END 2 */
 
@@ -638,14 +646,19 @@ void airChecker(){
 void StartSystemCheckTask(void *argument)
 {
   /* USER CODE BEGIN StartSystemCheckTask */
+<<<<<<< HEAD
 	//servoChecker();
 	//airChecker();
 	//printf("detct1");
+=======
+	servoChecker();
+	airChecker();
+>>>>>>> parent of c73977b (servo動作確認)
   /* Infinite loop */
   for(;;)
   {
 	  freeRTOSChecker();
-	  //mcmdChecker();
+	  mcmdChecker();
 	  osDelay(1000);
   }
   /* USER CODE END StartSystemCheckTask */
