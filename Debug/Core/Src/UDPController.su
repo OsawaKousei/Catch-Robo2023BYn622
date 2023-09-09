@@ -1,0 +1,5 @@
+../Core/Src/UDPController.c:19:6:UDPControllerReceive	392	static
+../Core/Src/UDPController.c:102:10:UDPController_GetControllerButtons	4	static
+../Core/Src/UDPController.c:106:6:UDPController_GetLeftStick	16	static
+../Core/Src/UDPController.c:110:6:UDPController_GetRightStick	16	static
+../Core/Src/UDPController.c:115:6:UDPController_Norm2Polar	24	static
