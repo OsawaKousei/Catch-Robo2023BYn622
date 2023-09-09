@@ -25,5 +25,5 @@
 ../Core/Src/main.c:620:6:airChecker	16	static
 ../Core/Src/main.c:633:6:StartSystemCheckTask	16	static
 ../Core/Src/main.c:655:6:StartControllerTask	16	static
-../Core/Src/main.c:674:6:HAL_TIM_PeriodElapsedCallback	16	static
-../Core/Src/main.c:691:6:Error_Handler	8	static,ignoring_inline_asm
+../Core/Src/main.c:671:6:HAL_TIM_PeriodElapsedCallback	16	static
+../Core/Src/main.c:688:6:Error_Handler	8	static,ignoring_inline_asm

@@ -656,10 +656,7 @@ void StartControllerTask(void *argument)
 {
   /* USER CODE BEGIN StartControllerTask */
   /* Infinite loop */
-	UDPControllerReceive(argument);
-	for(;;){
-		osDelay(10);
-	}
+  UDPControllerReceive(argument);
   /* USER CODE END StartControllerTask */
 }
 
