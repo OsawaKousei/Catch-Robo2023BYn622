@@ -602,7 +602,7 @@ void StartDefaultTask(void *argument)
 */
 void freeRTOSChecker(){//無限ループの中で実行
 	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);  // PINのPin stateを反転
-	printf("detect01\r\n");
+	printf("RTOSchecking\r\n");
 
 }
 
