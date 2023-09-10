@@ -268,11 +268,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   //記事ではmcmdなどの初期化コードを描くことになっている場所
-  canSetting();
+  //canSetting();
   //mcmdSetting();
   //activateMcmdControll();
   //servoSetting();
-  airSetting();
+  //airSetting();
 
   /* USER CODE END 2 */
 
@@ -634,7 +634,7 @@ void StartSystemCheckTask(void *argument)
 {
   /* USER CODE BEGIN StartSystemCheckTask */
 	//servoChecker();
-	airChecker();
+	//airChecker();
   /* Infinite loop */
   for(;;)
   {
