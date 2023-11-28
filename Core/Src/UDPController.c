@@ -14,7 +14,16 @@
 static struct controller_data controller_raw = { };
 struct timeval tv;
 
+void printControllerValue(struct controller_data *d){
+    printf("(lx, ly, rx, ry) : (%d, %d, %d, %d)\r\n", (int)(d->l_x * 256), (int)(d->l_y * 256), (int)(d->r_x * 256), (int)(d->r_y * 256));
+    printf("button: ");
+    for(int i=0; i<16; i++){
+        if((d->button >> i) & 1) printf("1");
+        else printf("0");
+    }
+    printf("\n\r");
 
+}
 
 void UDPControllerReceive(void const *argument) {
 
@@ -30,7 +39,7 @@ void UDPControllerReceive(void const *argument) {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_len = sizeof(server_addr);
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+   server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 //	server_addr.sin_addr.s_addr = inet_addr(CLIENT_IP);
     server_addr.sin_port = htons(CLIENT_PORT);
 
@@ -81,19 +90,11 @@ void UDPControllerReceive(void const *argument) {
                 }
 
                 struct controller_data *d = (struct controller_data*) &buffer;
-                printf("(lx, ly, rx, ry) : (%d, %d, %d, %d)\r\n", (int)(d->l_x * 256), (int)(d->l_y * 256), (int)(d->r_x * 256), (int)(d->r_y * 256));
-                printf("button: ");
-                for(int i=0; i<16; i++){
-                    if((d->button >> i) & 1) printf("1");
-                    else printf("0");
-                }
-                printf("\n\r");
-
-
+                printControllerValue(d);
                 memcpy(&controller_raw, d, sizeof(struct controller_data));
             }
         }
-        osDelay(10);
+        osDelay(100);
     }
 
 }

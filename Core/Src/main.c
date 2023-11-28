@@ -62,7 +62,7 @@ const osThreadAttr_t defaultTask_attributes = {
   .cb_size = sizeof(defaultTaskControlBlock),
   .stack_mem = &defaultTaskBuffer[0],
   .stack_size = sizeof(defaultTaskBuffer),
-  .priority = (osPriority_t) osPriorityRealtime,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for systemCheckTask */
 osThreadId_t systemCheckTaskHandle;
@@ -74,7 +74,7 @@ const osThreadAttr_t systemCheckTask_attributes = {
   .cb_size = sizeof(systemCheckTaskControlBlock),
   .stack_mem = &systemCheckTaskBuffer[0],
   .stack_size = sizeof(systemCheckTaskBuffer),
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for ControllerTask */
 osThreadId_t ControllerTaskHandle;
@@ -86,7 +86,7 @@ const osThreadAttr_t ControllerTask_attributes = {
   .cb_size = sizeof(ControllerTaskControlBlock),
   .stack_mem = &ControllerTaskBuffer[0],
   .stack_size = sizeof(ControllerTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal7,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
 NUM_OF_DEVICES num_of_devices;
@@ -96,6 +96,7 @@ MCMD_Feedback_Typedef mcmd_fb;//MCMDからのフィードバックを受け取�
 // CANモジュール基板の設定
   CANServo_Param_Typedef servo_param;
   CAN_Device servo_device;
+  CAN_Device air_device;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -161,14 +162,14 @@ void canSetting(){
 	CAN_SystemInit(&hcan1); // F7のCAN通信のinit
 
 	// デバイス数の設定 (今回はmcmd4が1枚)
-	num_of_devices.mcmd3 = 1;
+	num_of_devices.mcmd3 = 0;
 	num_of_devices.mcmd4 = 0;
-	num_of_devices.air = 0;
+	num_of_devices.air = 1;
 	num_of_devices.servo = 0;
 
 	printf("Start Initializing CAN System:End\n\r");
 	HAL_Delay(100);
-	//CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
+	CAN_WaitConnect(&num_of_devices);  // 設定された全てのCANモジュール基板との接続が確認できるまで待機
 }
 
 void mcmdSetting(){
@@ -225,6 +226,11 @@ void servoSetting(){
 	servo_param.pulse_width_min=0.5f;//サーボの制御のPWM信号のパルス幅の最小値
 	servo_param.pwm_frequency=50;//PWM周波数（この変更は未実装
 }
+
+void airSetting(){
+	air_device.node_type = NODE_AIR; //エアシリンダ基盤であることを示す
+	air_device.node_id = 0; //基板の番号
+}
 /* USER CODE END 0 */
 
 /**
@@ -262,11 +268,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   //記事ではmcmdなどの初期化コードを描くことになっている場所
-  canSetting();
-  mcmdSetting();
-  activateMcmdControll();
-  servoSetting();
-
+  //canSetting();
+  //mcmdSetting();
+  //activateMcmdControll();
+  //servoSetting();
+  //airSetting();
 
   /* USER CODE END 2 */
 
@@ -581,8 +587,9 @@ void StartDefaultTask(void *argument)
 	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1 点灯
 	}else{
 	   HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);  // LED1 消灯
+	  osDelay(100);
 	}
-	osDelay(100);
+
   }
   /* USER CODE END 5 */
 }
@@ -595,6 +602,8 @@ void StartDefaultTask(void *argument)
 */
 void freeRTOSChecker(){//無限ループの中で実行
 	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);  // PINのPin stateを反転
+	printf("RTOSchecking\r\n");
+
 }
 
 void mcmdChecker(){//無限ループの中で実行
@@ -607,16 +616,30 @@ void servoChecker(){
 	HAL_Delay(100);  // 適切なdelayを入れる
 	ServoDriver_SendValue(&servo_device, 20.0f);  // サーボが20.0度になるように回転させる
 }
+
+void airChecker(){
+	for(uint8_t i=PORT_1; i<=PORT_8; i++){  //すべてのポートを初期化しないとAir基板は動かない
+	    air_device.device_num = i; // (i番ポートを指定)
+	    AirCylinder_Init(&air_device, AIR_OFF);
+	    osDelay(10);  // このdelayは必要
+	  }
+	  air_device.device_num=0; // とりあえず0番ポートのエアシリンダを動かします。
+	  AirCylinder_SendOutput(&air_device, AIR_ON);  // 0番ポートの電磁弁がonになる
+	  osDelay(1000);
+	  AirCylinder_SendOutput(&air_device, AIR_OFF); // 0番ポートの電磁弁がoffになる
+	  osDelay(1000);
+}
 /* USER CODE END Header_StartSystemCheckTask */
 void StartSystemCheckTask(void *argument)
 {
   /* USER CODE BEGIN StartSystemCheckTask */
-	servoChecker();
+	//servoChecker();
+	//airChecker();
   /* Infinite loop */
   for(;;)
   {
 	  freeRTOSChecker();
-	  mcmdChecker();
+	  //mcmdChecker();
 	  osDelay(1000);
   }
   /* USER CODE END StartSystemCheckTask */
@@ -633,7 +656,7 @@ void StartControllerTask(void *argument)
 {
   /* USER CODE BEGIN StartControllerTask */
   /* Infinite loop */
-	UDPControllerReceive(argument);
+  UDPControllerReceive(argument);
   /* USER CODE END StartControllerTask */
 }
 
@@ -669,6 +692,9 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+	  printf("error");
+	  HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);  // LED1点灯
+	  osDelay(100);
   }
   /* USER CODE END Error_Handler_Debug */
 }

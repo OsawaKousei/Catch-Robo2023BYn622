@@ -18,7 +18,7 @@
 // Server: PC (Raspberry Pi or Linux PC)
 
 // Settings of F767zi
-#define CLIENT_IP "192.168.0.20"
+#define CLIENT_IP "192.168.0.30"
 #define CLIENT_PORT 7777
 
 // param of controller
